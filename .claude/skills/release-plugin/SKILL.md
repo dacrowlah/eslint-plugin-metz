@@ -80,8 +80,11 @@ owner already gave it for this release.
    **Merge by fast-forward, the one method:** once the PR's checks pass, with the owner's OK,
    `git push origin release/vX.Y.Z:main`. It keeps the signed commit, its SHA and its author, so
    `main` and the tag hold exactly the commit that step 4 gated, and GitHub marks the PR merged.
-   **Never use the GitHub UI's squash or merge-commit buttons** (or rebase): each makes a commit
-   nobody gated, authored by GitHub. If `main` moved, rebase the branch and rerun step 4 first.
+   The repository offers only "Rebase and merge" (squash and merge commits are disabled, and
+   GitHub requires one method), but **never use that button either**: it rewrites the commit,
+   losing the signature and changing the SHA, so the tag would sit on a commit nobody gated. GitHub
+   deletes the remote branch after the merge; the local `release/vX.Y.Z` remains for the tag below.
+   If `main` moved, rebase the branch and rerun step 4 first.
 
    Then tag that same commit, annotated (a lightweight tag is wrong: `git describe` and GitHub
    releases read the annotation), and push the tag:
