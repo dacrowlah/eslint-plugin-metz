@@ -1,0 +1,94 @@
+{
+  "name": "eslint-plugin-metz",
+  "version": "0.1.0",
+  "description": "ESLint rules for Sandi Metz's rules: counted-line limits, parameter limits, one component per file, one view model per screen, and reasoned waivers.",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin",
+    "sandi-metz",
+    "poodr",
+    "clean-code",
+    "react",
+    "react-native",
+    "typescript"
+  ],
+  "homepage": "https://github.com/dacrowlah/eslint-plugin-metz#readme",
+  "bugs": "https://github.com/dacrowlah/eslint-plugin-metz/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dacrowlah/eslint-plugin-metz.git"
+  },
+  "license": "MIT",
+  "author": "Ryan Crowley <dacrowlah@gmail.com>",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.js",
+    "./directives": "./dist/directives-check.js",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "metz-check-directives": "./dist/cli/check-directives.js"
+  },
+  "files": [
+    "dist",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "node scripts/clean.mjs dist && tsc -p tsconfig.build.json",
+    "prepare": "pnpm build",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
+    "test": "vitest run --coverage",
+    "test:smoke": "vitest run --config vitest.smoke.config.ts",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check-directives": "node dist/cli/check-directives.js .",
+    "docs:generate": "eslint-doc-generator",
+    "docs:check": "eslint-doc-generator --check",
+    "publint": "publint --strict",
+    "attw": "attw --pack . --profile esm-only",
+    "mutate": "stryker run",
+    "check": "pnpm typecheck && pnpm test && pnpm lint && pnpm format:check && pnpm build && pnpm check-directives && pnpm docs:check && pnpm publint && pnpm attw && pnpm test:smoke"
+  },
+  "dependencies": {
+    "@eslint/plugin-kit": "^0.7.3",
+    "@typescript-eslint/utils": "^8.72.0"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "0.18.5",
+    "@eslint/js": "10.0.1",
+    "@stryker-mutator/core": "10.0.0",
+    "@stryker-mutator/typescript-checker": "10.0.0",
+    "@stryker-mutator/vitest-runner": "10.0.0",
+    "@types/node": "24.19.2",
+    "@typescript-eslint/parser": "8.72.0",
+    "@typescript-eslint/rule-tester": "8.72.0",
+    "@vitest/coverage-v8": "5.0.5",
+    "@vitest/eslint-plugin": "1.6.27",
+    "eslint": "10.13.0",
+    "eslint-doc-generator": "3.7.1",
+    "eslint-plugin-eslint-plugin": "7.6.2",
+    "eslint-plugin-n": "18.5.0",
+    "jiti": "2.7.0",
+    "prettier": "3.9.10",
+    "publint": "0.3.25",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.0",
+    "vitest": "5.0.5"
+  },
+  "peerDependencies": {
+    "@typescript-eslint/parser": "^8.72.0",
+    "eslint": "^10.0.0",
+    "typescript": ">=4.8.4 <6.1.0"
+  },
+  "packageManager": "pnpm@12.14.0",
+  "engines": {
+    "node": "^22.13.0 || >=24"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

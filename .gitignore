@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+*.tgz
+# StrykerJS sandboxes and reports (pnpm mutate)
+.stryker-tmp/
+reports/
+# Local reports and notes, not part of the package
+.reports/
+# Re-include the project skills (the global gitignore excludes .claude/*)
+!.claude/skills/

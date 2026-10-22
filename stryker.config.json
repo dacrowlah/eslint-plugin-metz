@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "plugins": ["@stryker-mutator/vitest-runner", "@stryker-mutator/typescript-checker"],
+  "testRunner": "vitest",
+  "vitest": { "related": false },
+  "checkers": ["typescript"],
+  "tsconfigFile": "tsconfig.json",
+  "mutate": [
+    "src/*.ts",
+    "src/rules/**/*.ts",
+    "src/cli/main.ts",
+    "src/cli/files.ts",
+    "src/cli/request.ts"
+  ],
+  "coverageAnalysis": "perTest",
+  "reporters": ["json", "html", "clear-text"],
+  "jsonReporter": { "fileName": "reports/mutation/mutation.json" },
+  "htmlReporter": { "fileName": "reports/mutation/mutation.html" },
+  "thresholds": { "high": 100, "low": 100, "break": 100 },
+  "incremental": false,
+  "cleanTempDir": "always",
+  "timeoutMS": 60000
+}

@@ -1,0 +1,5 @@
+# pnpm 11+ reads its settings only from this file. This repo is one package, not a workspace.
+patchedDependencies:
+  # Vitest 5 joins test names with ' > ', and vitest-runner 10.0.0 filters with spaces, so tests
+  # inside a describe never ran under Stryker. Remove when a fixed vitest-runner ships.
+  '@stryker-mutator/vitest-runner@10.0.0': patches/@stryker-mutator__vitest-runner@10.0.0.patch
