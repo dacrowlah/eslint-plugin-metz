@@ -118,7 +118,13 @@ provenance. Steps 1 to 4 as above, then, in this order:
    choice for this publish; if npm refuses the publish without it, enable it
    (`npm profile enable-2fa auth-and-writes`, or on npmjs.com) and publish again.
 4. **Push `main` and the annotated tag `v0.1.1`.** The `Release` workflow runs `pack` in full, and
-   `publish` skips with a notice, since npm already has 0.1.1.
+   `publish` skips with a notice, since npm already has 0.1.1. Push only once
+   `npm view eslint-plugin-metz@0.1.1 version` prints `0.1.1`; the CLI's `+ eslint-plugin-metz@0.1.1`
+   line is not enough. A first publish can take minutes to be listed: on 2026-10-22 the CLI printed
+   its `+` line at about 19:45Z, but the registry listed 0.1.1 only at 19:50:05Z (only a
+   `0.0.0-stage` placeholder before then). The tag, pushed at 19:45:31Z, reached the skip step
+   before npm listed the version, so `publish` ran and failed. If that happens, re-run only the
+   failed job once `npm view` lists the version: `gh run rerun <run-id> --failed`.
 5. **Make the repository public:**
    `gh repo edit dacrowlah/eslint-plugin-metz --visibility public --accept-visibility-change-consequences`.
    npm generates provenance only for a public repository.
@@ -156,6 +162,10 @@ provenance. Steps 1 to 4 as above, then, in this order:
 - A lightweight tag, or a tag on a commit that is not on `main` (the workflow refuses it).
 - Editing `meta.version` or docs URLs by hand: they come from `package.json`.
 - Renaming `release.yml` or its `npm` environment: the trusted publisher names both, exactly.
+- Handing npm a tarball path without `./` or `/` in front: npm reads `release/x.tgz` as the
+  GitHub repository `release/x.tgz` and fails in `git ls-remote`. The workflow keeps the path in
+  one `TARBALL` variable and dry-runs the publish command (with `--force`, so a version npm already
+  has passes) in its `pack` job.
 - Rehearsing with `npm publish --dry-run` and its scripts: npm hands the dry run on to `attw`'s
   own `npm pack`, which then writes no tarball, so `prepublishOnly` fails. Run `pnpm check`, then
   `npm publish --dry-run --ignore-scripts`.

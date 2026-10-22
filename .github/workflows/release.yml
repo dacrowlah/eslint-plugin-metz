@@ -18,6 +18,11 @@ concurrency:
   group: release
   cancel-in-progress: false
 
+env:
+  # The one name of the tarball both jobs hand to npm. It starts with `./`: npm reads a bare
+  # `release/x.tgz` as the GitHub repository `release/x.tgz`, not as a file.
+  TARBALL: ./release/eslint-plugin-metz.tgz
+
 # Actions are pinned to the commit of a release tag (the comment names it), so a moved tag cannot
 # change what runs.
 jobs:
@@ -50,7 +55,14 @@ jobs:
       - run: |
           mkdir -p release
           npm pack --ignore-scripts --pack-destination release
-          sha256sum release/*.tgz
+          mv release/eslint-plugin-metz-*.tgz "$TARBALL"
+          sha256sum "$TARBALL"
+      # The publish job's command on this tarball, as a dry run: it needs no npm login, and fails
+      # when npm cannot read the tarball's path as a file. It checks the path only: `--force` lets
+      # the dry run pass for a version npm already has (a re-run, or one published by hand), and
+      # npm's version rules stay with the real publish, which `--dry-run` keeps from happening here.
+      - name: npm can read the tarball path
+        run: npm publish "$TARBALL" --dry-run --force --ignore-scripts
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: package
@@ -100,4 +112,4 @@ jobs:
       # A tarball publish runs no package scripts. `--provenance` makes a missing provenance
       # statement fail the publish instead of passing silently.
       - if: steps.npm.outputs.published != 'true'
-        run: npm publish "release/eslint-plugin-metz-${GITHUB_REF_NAME#v}.tgz" --provenance
+        run: npm publish "$TARBALL" --provenance

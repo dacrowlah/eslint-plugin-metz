@@ -7,6 +7,12 @@ All notable changes to this package are recorded here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- The release workflow hands npm the tarball as `./release/…`; without the `./`, npm read the path
+  as a GitHub repository, and the v0.1.1 run's `publish` job failed (0.1.1 itself was published by
+  hand). Its `pack` job now dry-runs that publish command. No change to the package.
+
 ## [0.1.1] - 2026-10-22
 
 The first release on npm. Patch: documentation and packaging only; no rule, preset or export
