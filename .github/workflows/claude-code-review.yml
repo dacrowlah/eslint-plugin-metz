@@ -8,6 +8,11 @@ on:
 
 permissions: {}
 
+# A new push supersedes the review of the old head, so a late review can never vouch for a newer one.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   review:
     if: github.event.pull_request.head.repo.full_name == github.repository
