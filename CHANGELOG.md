@@ -7,10 +7,26 @@ All notable changes to this package are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-22
+
+The first release on npm. Patch: documentation and packaging only; no rule, preset or export
+changed.
+
+### Fixed
+
+- The README shows how to use a preset in a plain exported config array: spread it
+  (`export default [...metz.configs.strict]`). A preset is an array, and an unspread one fails with
+  `TypeError: Unexpected array`; `defineConfig([metz.configs.strict])` is unchanged.
+
+### Changed
+
+- Published to the public npm registry as `eslint-plugin-metz`, and the repository is public.
+  Install with `pnpm add -D eslint-plugin-metz`; the git-tag install still works. Releases
+  published from GitHub Actions through npm trusted publishing carry provenance.
+
 ## [0.1.0] - 2026-10-21
 
-First standalone release, extracted from an application monorepo, where the rules were developed
-and mutation-tested.
+First standalone release.
 
 ### Added
 
@@ -32,5 +48,6 @@ and mutation-tested.
 - Requires ESLint 10 (flat config only), `@typescript-eslint/parser` 8 and Node.js
   `^22.13.0 || >=24`. ESM only.
 
-[Unreleased]: https://github.com/dacrowlah/eslint-plugin-metz/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/dacrowlah/eslint-plugin-metz/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/dacrowlah/eslint-plugin-metz/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/dacrowlah/eslint-plugin-metz/releases/tag/v0.1.0

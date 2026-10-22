@@ -27,18 +27,28 @@ The package is ESM-only, and ESLint loads it from any config file. From CommonJS
 `const metz = require('eslint-plugin-metz').default;`.
 
 ```sh
-pnpm add -D eslint-plugin-metz eslint @typescript-eslint/parser typescript
+pnpm add -D eslint-plugin-metz eslint typescript-eslint @typescript-eslint/parser typescript@~6.0
 ```
 
-Until it is published to npm, install it from its git repository, pinned to a tag. pnpm builds it on
-install (its `prepare` script), which pnpm 10.26 and later block until you allow it in
-`pnpm-workspace.yaml`
+`typescript-eslint` is what the [Usage](#usage) examples configure TypeScript with; the plugin
+itself needs only the parser. TypeScript stays on 6.0 (the package's `typescript` peer range), since
+typescript-eslint 8 does not support TypeScript 7 yet.
+
+Releases published to npm from GitHub Actions carry
+[provenance](https://docs.npmjs.com/generating-provenance-statements); check them with
+`npm audit signatures`.
+
+### From git
+
+To use a tag or commit that is not on npm, install the package from its git repository, pinned to
+that ref. pnpm builds it on install (its `prepare` script), which pnpm 10.26 and later block until you
+allow it in `pnpm-workspace.yaml`
 ([pnpm `allowBuilds`](https://pnpm.io/settings/build#allowbuilds); the repository form, with no
 `#ref`, keeps the allowance across tags):
 
 ```jsonc
 // package.json
-"devDependencies": { "eslint-plugin-metz": "github:dacrowlah/eslint-plugin-metz#v0.1.0" }
+"devDependencies": { "eslint-plugin-metz": "github:dacrowlah/eslint-plugin-metz#vX.Y.Z" }
 ```
 
 This needs **pnpm 12**, the version this package is built and tested with (older pnpm 11 releases do
@@ -72,6 +82,18 @@ export default defineConfig([
 ]);
 ```
 
+Each preset is an array of config objects. `defineConfig` flattens nested arrays; a plain exported
+array does not, so there you spread the preset (an unspread one fails with `TypeError: Unexpected
+array`):
+
+```js
+// eslint.config.js, without defineConfig
+import tseslint from 'typescript-eslint';
+import metz from 'eslint-plugin-metz';
+
+export default [...tseslint.configs.recommended, ...metz.configs.strict];
+```
+
 Every preset registers the plugin under `metz`, so its rules are `metz/<rule>`, and you can also
 name it yourself (`plugins: { metz }`): the presets reference the same plugin object.
 
@@ -100,8 +122,8 @@ for tool config files and `.d.ts` files.
   [`metz/screen-view-model`](docs/rules/screen-view-model.md) on screen files
   (`*Screen.jsx`/`*Screen.tsx`), test files excepted.
 
-Every preset is an array of named flat-config objects. A change to any preset follows
-[Versioning](#versioning).
+Every preset is an array of named flat-config objects (spread it into a plain config array; see
+[Usage](#usage)). A change to any preset follows [Versioning](#versioning).
 
 ## Overrides
 
@@ -288,7 +310,7 @@ an independent implementation and is not endorsed by her.
 
 ## Versioning
 
-This is the package's one semver policy; CLAUDE.md, the release skill and the changelog link here.
+This is the package's one semver policy; the changelog links here.
 The package follows [Semantic Versioning](https://semver.org/):
 
 | Kind      | The change                                                                                                                                                                                                                                                                                                                                                                    |

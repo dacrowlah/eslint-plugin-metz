@@ -7,7 +7,6 @@ import {
   findings,
   install,
   installed,
-  PNPM,
   RUN_TIMEOUT,
   run,
   SHIPPED,
@@ -15,18 +14,20 @@ import {
 } from './consumer.ts';
 import { EXPECTED_FINDINGS } from './project.ts';
 
-// The artifact npm would publish: `pnpm pack` of the built package, installed into a fresh project
-// with only its declared dependencies and peers. Proves the tarball, not the source tree.
+// The artifact npm publishes: `npm pack` of the built package, installed into a fresh project with
+// only its declared dependencies and peers. Proves the tarball, not the source tree. npm's packer,
+// not pnpm's: npm publishes, and the two write different manifests (pnpm's drops `scripts`).
+// `--ignore-scripts` packs the very build the earlier gates checked, as the Release workflow does.
 const REPO = join(import.meta.dirname, '..');
 /** Packing, installing (from the local store) and linting take seconds; minutes on a cold CI. */
 const INSTALL_TIMEOUT = 300_000;
 const finishing = { onTestFinished: afterAll };
 let project = '';
 
-/** The tarball `pnpm pack` makes of this repository. */
+/** The tarball `npm pack` makes of this repository's current build. */
 function packed(): string {
   const packs = tempDir(finishing, 'metz-pack-');
-  succeed(REPO, ...PNPM, 'pack', '--pack-destination', packs);
+  succeed(REPO, 'npm', 'pack', '--ignore-scripts', '--pack-destination', packs);
   return join(packs, String(readdirSync(packs)[0]));
 }
 

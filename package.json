@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-metz",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "ESLint rules for Sandi Metz's rules: counted-line limits, parameter limits, one component per file, one view model per screen, and reasoned waivers.",
   "keywords": [
     "eslint",
@@ -29,7 +29,7 @@
     "./package.json": "./package.json"
   },
   "bin": {
-    "metz-check-directives": "./dist/cli/check-directives.js"
+    "metz-check-directives": "dist/cli/check-directives.js"
   },
   "files": [
     "dist",
@@ -38,6 +38,7 @@
   "scripts": {
     "build": "node scripts/clean.mjs dist && tsc -p tsconfig.build.json",
     "prepare": "pnpm build",
+    "prepublishOnly": "pnpm check",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
     "test": "vitest run --coverage",
     "test:smoke": "vitest run --config vitest.smoke.config.ts",
@@ -88,7 +89,6 @@
     "node": "^22.13.0 || >=24"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }
