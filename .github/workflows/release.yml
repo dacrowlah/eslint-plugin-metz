@@ -99,7 +99,8 @@ jobs:
         with:
           name: package
           path: release
-      # A version npm already has (a re-run, or 0.1.1, published by hand) is a notice, not a failure.
+      # A version npm already has (after a re-run, or 0.1.1, which was published by hand) is a notice,
+      # not a failure.
       # Fails safe: `npm view` prints nothing for an unknown version, package or a network error, so
       # those still try to publish and fail loudly.
       - name: Skip a version npm already has

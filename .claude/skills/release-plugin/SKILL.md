@@ -69,24 +69,37 @@ owner already gave it for this release.
    rerun step 4. Only then commit the bump, authored `Ryan Crowley <dacrowlah@gmail.com>`:
    `git switch -c release/vX.Y.Z && git commit -am "release: vX.Y.Z"`.
 
-6. **Ask the owner** to push (unless already approved for this release), then open the pull
-   request: `git push -u origin release/vX.Y.Z && gh pr create --fill`. **A release goes through a
-   pull request:** the Claude code review workflow (`.github/workflows/claude-code-review.yml`)
-   runs on pull requests from this repository's branches and must pass before the merge and the
-   tag. After the merge, `git switch main && git pull --ff-only`, then the **annotated** tag on
-   that commit, `git tag -a vX.Y.Z -m "eslint-plugin-metz vX.Y.Z"` (a lightweight tag is wrong:
-   `git describe` and GitHub releases read the annotation), and `git push origin vX.Y.Z`. The tag
-   push starts the `Release` workflow
+6. **Ask the owner** to push and to merge (unless already approved for this release), then open
+   the pull request: `git push -u origin release/vX.Y.Z && gh pr create --fill`. **A release goes
+   through a pull request.** The review gate is the release reviewer's approval of the staged diff
+   (step 5) plus green CI (`ci.yml`). The Claude code review workflow
+   (`.github/workflows/claude-code-review.yml`) is being fixed: it exits green without reviewing,
+   because its subagents run in the background and the job ends first, so its check proves nothing
+   until it posts a review.
+
+   **Merge by fast-forward, the one method:** once the PR's checks pass, with the owner's OK,
+   `git push origin release/vX.Y.Z:main`. It keeps the signed commit, its SHA and its author, so
+   `main` and the tag hold exactly the commit that step 4 gated, and GitHub marks the PR merged.
+   **Never use the GitHub UI's squash or merge-commit buttons** (or rebase): each makes a commit
+   nobody gated, authored by GitHub. If `main` moved, rebase the branch and rerun step 4 first.
+
+   Then tag that same commit, annotated (a lightweight tag is wrong: `git describe` and GitHub
+   releases read the annotation), and push the tag:
+   `git tag -a vX.Y.Z "$(git rev-parse release/vX.Y.Z)" -m "eslint-plugin-metz vX.Y.Z" && git push origin vX.Y.Z`.
+   The tag push starts the `Release` workflow
    (`.github/workflows/release.yml`: its header and step names say what it checks and does).
    Watch it:
-   `gh run watch --exit-status $(gh run list --workflow release.yml --limit 1 --json databaseId --jq '.[0].databaseId')`.
+   `gh run watch --exit-status $(gh run list --workflow release.yml --branch vX.Y.Z --limit 1 --json databaseId --jq '.[0].databaseId')`
+   (`--branch` pins the new tag's run, not the previous release's).
    If `pack` fails, nothing was published: fix, and cut a new patch version (or, with the owner's
    OK, move the unpublished tag). Once npm has a version it never accepts it again.
    If `publish` fails, ask npm whether it took the version before re-running anything:
    `npm view eslint-plugin-metz@X.Y.Z version`. npm can take minutes to list a new version (on
    2026-10-22 it listed 0.1.1 about five minutes after the CLI's `+ eslint-plugin-metz@0.1.1`
    line), so wait. Once it is listed, re-run only the failed job, `gh run rerun <run-id> --failed`:
-   its skip step passes. A re-run before then publishes again, and npm refuses the version.
+   its skip step passes. A re-run before then publishes again, and npm refuses the version. If it
+   is still not listed after about ten minutes, npm did not take it: check "Trust and access", fix
+   the cause, then re-run the failed job (the skip step does not skip, and it publishes).
 
 7. **Verify the published package** in a throwaway project:
 
@@ -98,8 +111,7 @@ owner already gave it for this release.
    node -e "import('eslint-plugin-metz').then((m) => console.log(m.default.meta))"
    ```
 
-   If `npm view` prints nothing, npm has not listed the version yet: wait a few minutes and rerun
-   it. `npm view` must print the provenance predicate, `npm audit signatures` must report a verified
+   If `npm view` prints nothing, npm has not listed the version yet: see the listing lag in step 6. `npm view` must print the provenance predicate, `npm audit signatures` must report a verified
    attestation for `eslint-plugin-metz`, and the meta must print `version: 'X.Y.Z'`.
 
 8. **Bump consumers**, each as its own reviewed change in that repository, under that repository's
@@ -117,21 +129,24 @@ These hold for every release; check them if a publish is refused.
   case-sensitive). It matches those, not the ref, so the `npm` environment's deployment rule
   (only tags `v*`, in the repository's Settings → Environments) is what stops a branch from
   publishing. A tag ruleset for `v*` lets only the owner create or move release tags, and fork
-  pull request workflows need approval for every external contributor. Should the publisher ever
-  need registering again (npm CLI 11.15.0 or later; it must complete a publish within 2 days or it
-  expires):
+  pull request workflows need approval for every external contributor. The live publisher
+  allows two permissions, publish and stage publish. Should it ever need registering again
+  (npm CLI 11.15.0 or later; it must complete a publish within 2 days or it expires), this
+  command reproduces the live configuration exactly, both `--allow-` flags included:
 
   ```bash
   npm trust github eslint-plugin-metz --repository dacrowlah/eslint-plugin-metz \
-    --file release.yml --environment npm --allow-publish
+    --file release.yml --environment npm --allow-publish --allow-stage-publish
   ```
 
 - `npm trust` needs two-factor authentication on the npm account; trusted publishing itself does
   not use it.
-- **The owner's remaining manual step:** on npmjs.com, the package's Settings → Publishing access
-  → "Require two-factor authentication and disallow tokens". Trusted publishing is unaffected.
+- The package's npmjs.com Settings → Publishing access should read "Require two-factor
+  authentication and disallow tokens" (not verifiable without an OTP). Trusted publishing is
+  unaffected.
 - npm generates provenance only in CI and only for a public repository: the repository stays
-  public, and a version published by hand (0.1.1, the first) carries none.
+  public, and a version published by hand (0.1.1, the first real version; npm also lists a `0.0.0-stage`
+  placeholder) carries none.
 
 ## Common mistakes
 
