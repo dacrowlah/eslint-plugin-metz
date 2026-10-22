@@ -80,20 +80,31 @@ owner already gave it for this release.
    earlier head does not cover a later push. Push the complete release before the review runs. If
    the head changes after Claude has commented, delete Claude's review comment
    (`gh api -X DELETE repos/<owner>/<repo>/issues/comments/<id>`) and re-run the review job for
-   the new head (`gh run rerun <id>`). Before merging, check that Claude's comment is newer than
-   the review run for the head (the run starts after the push, so after the head commit):
+   the new head (`gh run rerun <id>`). A push cancels the review still running for the previous
+   head, so only the newest head's run can post. Before merging, check that the local branch is the
+   PR's head and that Claude's comment is newer than the review run for it (the run starts after
+   the push, so after the head commit). The check fails, with exit 1, if either does not hold:
 
    ```bash
-   head=$(git rev-parse release/vX.Y.Z)
-   run_at=$(gh run list --workflow claude-code-review.yml --branch release/vX.Y.Z \
-     --json headSha,createdAt --jq "map(select(.headSha==\"$head\")) | sort_by(.createdAt) | last | .createdAt")
-   gh api repos/<owner>/<repo>/issues/<pr>/comments --jq \
-     "map(select((.user.login | startswith(\"claude\")) and .created_at > \"$run_at\")) | length"
+   branch=release/vX.Y.Z pr=<number> repo=<owner>/<repo>
+   (
+     set -e
+     head=$(git rev-parse "$branch")
+     pr_head=$(gh pr view "$pr" --repo "$repo" --json headRefOid --jq .headRefOid)
+     test "$head" = "$pr_head" || { echo "local head $head is not the PR head $pr_head"; exit 1; }
+     run_at=$(gh run list --repo "$repo" --workflow claude-code-review.yml --branch "$branch" \
+       --limit 100 --json headSha,createdAt \
+       --jq "map(select(.headSha==\"$head\")) | sort_by(.createdAt) | last | .createdAt // empty")
+     test -n "$run_at" || { echo "no review run for $head"; exit 1; }
+     n=$(gh api "repos/$repo/issues/$pr/comments" --jq \
+       "map(select((.user.login | startswith(\"claude\")) and .created_at > \"$run_at\")) | length")
+     test "$n" -ge 1 || { echo "no Claude review newer than the run for $head"; exit 1; }
+   )
    ```
 
-   It must print 1 or more. A green review check with no such comment is a failed review, not a
-   pass: either the run reviewed nothing (see "Trust and access") or it skipped on an older
-   comment (delete it and re-run).
+   A green review check with no such comment is a failed review, not a pass: either the run
+   reviewed nothing (see "Trust and access") or it skipped on an older comment (delete it and
+   re-run).
 
    **Merge by fast-forward, the one method:** once the PR's checks pass, with the owner's OK,
    `git push origin release/vX.Y.Z:main`. It keeps the signed commit, its SHA and its author, so
