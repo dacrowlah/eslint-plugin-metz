@@ -2,8 +2,8 @@ name: Release
 
 # Publishes a `v*` tag to npm through trusted publishing (OIDC): no npm token is stored anywhere,
 # and npm adds provenance. npm's trusted publisher for this package names this file
-# (`release.yml`) and the `npm` environment, so renaming either breaks publishing. The process,
-# and the first-publish exception, are in .claude/skills/release-plugin/SKILL.md.
+# (`release.yml`) and the `npm` environment, so renaming either breaks publishing. The process is
+# in .claude/skills/release-plugin/SKILL.md.
 #
 # Two jobs, so the OIDC token is never in reach of the dependencies `pnpm check` runs: `pack`
 # verifies and packs with read-only permissions; `publish` only uploads that tarball.
@@ -99,7 +99,7 @@ jobs:
         with:
           name: package
           path: release
-      # A version npm already has (the first one, published by hand) is a notice, not a failure.
+      # A version npm already has (a re-run, or 0.1.1, published by hand) is a notice, not a failure.
       # Fails safe: `npm view` prints nothing for an unknown version, package or a network error, so
       # those still try to publish and fail loudly.
       - name: Skip a version npm already has

@@ -7,6 +7,20 @@ All notable changes to this package are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-10-22
+
+Patch: internal only; no rule, preset, option, message or export changed.
+
+### Changed
+
+- The name a report gives an unnamed function, `(anonymous function)`, has one home
+  (`reportedName` in `src/ast.ts`), shared by `max-counted-lines` and `max-params`. Reports are
+  unchanged.
+- The release process drops its finished first-publish steps; every release publishes from GitHub
+  Actions through trusted publishing, with provenance. No change to the package.
+- Pull requests from branches of this repository get an automated Claude code review
+  (`.github/workflows/claude-code-review.yml`). No change to the package.
+
 ## [0.1.2] - 2026-10-22
 
 The first release published from GitHub Actions through npm trusted publishing, with provenance.
@@ -59,7 +73,8 @@ First standalone release.
 - Requires ESLint 10 (flat config only), `@typescript-eslint/parser` 8 and Node.js
   `^22.13.0 || >=24`. ESM only.
 
-[Unreleased]: https://github.com/dacrowlah/eslint-plugin-metz/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/dacrowlah/eslint-plugin-metz/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/dacrowlah/eslint-plugin-metz/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/dacrowlah/eslint-plugin-metz/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/dacrowlah/eslint-plugin-metz/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/dacrowlah/eslint-plugin-metz/releases/tag/v0.1.0

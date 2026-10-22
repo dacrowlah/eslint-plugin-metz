@@ -83,6 +83,8 @@ function heldAs(fn: Sig): string | null {
 
 /** The binding name a function is known by, or null when anonymous. */
 export const fnName = (fn: Sig): string | null => (fn.id ? fn.id.name : heldAs(fn));
+/** The name a report gives a function: its binding name, or `(anonymous function)`. */
+export const reportedName = (fn: Sig): string => fnName(fn) ?? '(anonymous function)';
 
 const EXPORTS = new Set<string>([AST.ExportNamedDeclaration, AST.ExportDefaultDeclaration]);
 

@@ -14,7 +14,7 @@
 // (`declare function`) are checked too.
 // React components are functions, so their props count too.
 import { AST_NODE_TYPES as AST, type TSESLint, type TSESTree } from '@typescript-eslint/utils';
-import { FN_SELECTORS, fnName, type Sig } from '../ast.ts';
+import { FN_SELECTORS, reportedName, type Sig } from '../ast.ts';
 import { DEFAULT_BAG_PATTERN } from '../bags.ts';
 import { createRule } from '../create-rule.ts';
 import { type Handlers, listen } from '../listen.ts';
@@ -59,7 +59,7 @@ const hasRest = (p: TSESTree.Parameter): boolean =>
 function check(fn: Sig, s: ParamCheck): void {
   for (const p of fn.params.filter(hasRest)) s.context.report({ node: p, messageId: 'restBag' });
   const n = s.weigh(fn, s.uncountable);
-  const data = { n, max: s.max, name: fnName(fn) ?? '(anonymous function)' };
+  const data = { n, max: s.max, name: reportedName(fn) };
   if (n > s.max) s.context.report({ node: fn, messageId: 'tooMany', data });
 }
 

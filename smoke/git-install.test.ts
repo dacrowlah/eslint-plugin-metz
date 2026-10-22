@@ -1,14 +1,16 @@
 import { cpSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { tempDir } from '../test/temp-dir.ts';
 import {
   consumer,
   findings,
+  finishing,
   install,
   installed,
   PNPM,
   refusalOf,
+  REPO,
   RUN_TIMEOUT,
   run,
   SHIPPED,
@@ -20,10 +22,8 @@ import { EXPECTED_FINDINGS } from './project.ts';
 // built on install by its `prepare` script. The files git would commit now (tracked, plus untracked
 // that are not ignored) are copied to a throwaway repository, committed and tagged there (never in
 // this one), and installed through `git+file://` with the build allowed in pnpm's `allowBuilds`.
-const REPO = join(import.meta.dirname, '..');
 const INSTALL_TIMEOUT = 600_000;
 const TAG = 'v0.1.0';
-const finishing = { onTestFinished: afterAll };
 /** A throwaway identity, and no signing: the owner's signing key never touches a throwaway. */
 const AS = [
   ...['-c', 'user.name=metz smoke', '-c', 'user.email=smoke@example.invalid'],

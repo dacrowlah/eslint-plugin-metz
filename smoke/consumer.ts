@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, readdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative } from 'node:path';
+import { afterAll } from 'vitest';
 import { outcomeOf } from '../test/cli-harness.ts';
 import { FILES, PEERS } from './project.ts';
 
@@ -13,6 +14,11 @@ import { FILES, PEERS } from './project.ts';
  * test keeps the default. */
 export const RUN_TIMEOUT = 120_000;
 
+/** This repository, which the smoke tests pack or copy. */
+export const REPO = join(import.meta.dirname, '..');
+/** A temp dir's owner for a whole test file: `tempDir(finishing, …)` is removed after its tests. */
+export const finishing = { onTestFinished: afterAll };
+
 /** pnpm at the version the repository's `packageManager` pins: the pnpm running this script
  * (`pnpm test:smoke`, which honours `packageManager`), or else corepack running that version. */
 export function pnpmCommand(
@@ -23,7 +29,7 @@ export function pnpmCommand(
   return isPnpm ? [execpath] : ['corepack', packageManager];
 }
 
-const MANIFEST = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as {
+const MANIFEST = JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8')) as {
   packageManager: string;
 };
 export const PNPM = pnpmCommand(process.env['npm_execpath'], MANIFEST.packageManager);

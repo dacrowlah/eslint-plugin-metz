@@ -1,7 +1,7 @@
 // The listeners of metz/max-counted-lines: each function body, component budget, class `static {}`
 // block and module, measured in counted lines against its limit.
 import { AST_NODE_TYPES as AST, type TSESLint, type TSESTree } from '@typescript-eslint/utils';
-import { type Fn, fnName, isJsxish } from './ast.ts';
+import { type Fn, isJsxish, reportedName } from './ast.ts';
 import { bodyTokens, componentBudget } from './component-budget.ts';
 import { countedLines, markSkipped, type SkipSet } from './counted-lines.ts';
 import { functionHandlers, type Handlers, popFrame } from './listen.ts';
@@ -55,7 +55,7 @@ function measureComponent(fn: Fn, name: string, s: Lines): void {
 }
 
 function measureFunction({ fn, returnsJsx }: Frame, s: Lines): void {
-  const name = fnName(fn) ?? '(anonymous function)';
+  const name = reportedName(fn);
   if (returnsJsx && isPascal(name)) measureComponent(fn, name, s);
   else measure(s, 'function', bodyTokens(s.source, fn), { node: fn, name });
 }

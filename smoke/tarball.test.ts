@@ -1,12 +1,14 @@
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { tempDir } from '../test/temp-dir.ts';
 import {
   consumer,
   findings,
+  finishing,
   install,
   installed,
+  REPO,
   RUN_TIMEOUT,
   run,
   SHIPPED,
@@ -18,10 +20,8 @@ import { EXPECTED_FINDINGS } from './project.ts';
 // only its declared dependencies and peers. Proves the tarball, not the source tree. npm's packer,
 // not pnpm's: npm publishes, and the two write different manifests (pnpm's drops `scripts`).
 // `--ignore-scripts` packs the very build the earlier gates checked, as the Release workflow does.
-const REPO = join(import.meta.dirname, '..');
 /** Packing, installing (from the local store) and linting take seconds; minutes on a cold CI. */
 const INSTALL_TIMEOUT = 300_000;
-const finishing = { onTestFinished: afterAll };
 let project = '';
 
 /** The tarball `npm pack` makes of this repository's current build. */
