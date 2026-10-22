@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-metz",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "ESLint rules for Sandi Metz's rules: counted-line limits, parameter limits, one component per file, one view model per screen, and reasoned waivers.",
   "keywords": [
     "eslint",

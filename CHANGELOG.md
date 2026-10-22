@@ -7,6 +7,11 @@ All notable changes to this package are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-10-22
+
+The first release published from GitHub Actions through npm trusted publishing, with provenance.
+Patch: the release workflow only; no rule, preset or export changed.
+
 ### Fixed
 
 - The release workflow hands npm the tarball as `./release/…`; without the `./`, npm read the path
@@ -54,6 +59,7 @@ First standalone release.
 - Requires ESLint 10 (flat config only), `@typescript-eslint/parser` 8 and Node.js
   `^22.13.0 || >=24`. ESM only.
 
-[Unreleased]: https://github.com/dacrowlah/eslint-plugin-metz/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/dacrowlah/eslint-plugin-metz/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/dacrowlah/eslint-plugin-metz/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/dacrowlah/eslint-plugin-metz/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/dacrowlah/eslint-plugin-metz/releases/tag/v0.1.0
