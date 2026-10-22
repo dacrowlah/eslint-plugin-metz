@@ -71,11 +71,11 @@ owner already gave it for this release.
 
 6. **Ask the owner** to push and to merge (unless already approved for this release), then open
    the pull request: `git push -u origin release/vX.Y.Z && gh pr create --fill`. **A release goes
-   through a pull request.** The review gate is the release reviewer's approval of the staged diff
-   (step 5) plus green CI (`ci.yml`). The Claude code review workflow
-   (`.github/workflows/claude-code-review.yml`) is being fixed: it exits green without reviewing,
-   because its subagents run in the background and the job ends first, so its check proves nothing
-   until it posts a review.
+   through a pull request.** The gate has three parts, all required: the Claude code review
+   (`.github/workflows/claude-code-review.yml`) has posted its review on the PR (a "Code review"
+   comment, even if "No issues found"), the release reviewer has approved the staged diff
+   (step 5), and CI (`ci.yml`) is green. A green review check with no review comment on the PR
+   means the run failed to review: treat it as failed, not passed (see "Trust and access").
 
    **Merge by fast-forward, the one method:** once the PR's checks pass, with the owner's OK,
    `git push origin release/vX.Y.Z:main`. It keeps the signed commit, its SHA and its author, so
@@ -142,6 +142,17 @@ These hold for every release; check them if a publish is refused.
     --file release.yml --environment npm --allow-publish --allow-stage-publish
   ```
 
+- The review workflow has three settings that look removable and are not. Do not "simplify" them:
+  - `--allowedTools` lists the `code-review` plugin's own `gh` commands (`gh pr comment`,
+    `gh pr diff`, `gh pr view`, `gh pr list`, `gh issue view`, `gh issue list`, `gh search`) and
+    the inline-comment tool, granted to its subagents too. Without them the subagents' commands
+    are refused and the job ends green having reviewed nothing. `gh api` stays out: it can write.
+  - `--model claude-opus-5-5`: Opus runs the plugin's subagents to completion; the run that
+    posted its first review used it.
+  - `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` and `CLAUDE_CODE_DISABLE_CRON` (both `'1'`): the action
+    stops reading at the first result, so a subagent left in the background, or a scheduled
+    wake-up, dies with the job and the review never posts. These keep the subagents in the
+    foreground.
 - `npm trust` needs two-factor authentication on the npm account; trusted publishing itself does
   not use it.
 - The package's npmjs.com Settings → Publishing access should read "Require two-factor
