@@ -7,6 +7,16 @@ All notable changes to this package are recorded here. The format follows
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-24
+
+The first stable release. No rule, preset, option, message or export changed.
+
+### Changed
+
+- From this release the README's Versioning policy applies in full: a change that can make a
+  passing lint fail is a major release.
+- The README documents installing from npm only; the git-install section is removed.
+
 ## [0.1.3] - 2026-10-22
 
 Patch: internal only; no rule, preset, option, message or export changed.
@@ -73,7 +83,8 @@ First standalone release.
 - Requires ESLint 10 (flat config only), `@typescript-eslint/parser` 8 and Node.js
   `^22.13.0 || >=24`. ESM only.
 
-[Unreleased]: https://github.com/dacrowlah/eslint-plugin-metz/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/dacrowlah/eslint-plugin-metz/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/dacrowlah/eslint-plugin-metz/compare/v0.1.3...v1.0.0
 [0.1.3]: https://github.com/dacrowlah/eslint-plugin-metz/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/dacrowlah/eslint-plugin-metz/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/dacrowlah/eslint-plugin-metz/compare/v0.1.0...v0.1.1

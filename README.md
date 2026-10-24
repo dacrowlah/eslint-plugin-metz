@@ -38,36 +38,6 @@ Releases published to npm from GitHub Actions carry
 [provenance](https://docs.npmjs.com/generating-provenance-statements); check them with
 `npm audit signatures`.
 
-### From git
-
-To use a tag or commit that is not on npm, install the package from its git repository, pinned to
-that ref. pnpm builds it on install (its `prepare` script), which pnpm 10.26 and later block until you
-allow it in `pnpm-workspace.yaml`
-([pnpm `allowBuilds`](https://pnpm.io/settings/build#allowbuilds); the repository form, with no
-`#ref`, keeps the allowance across tags):
-
-```jsonc
-// package.json
-"devDependencies": { "eslint-plugin-metz": "github:dacrowlah/eslint-plugin-metz#vX.Y.Z" }
-```
-
-This needs **pnpm 12**, the version this package is built and tested with (older pnpm 11 releases do
-not accept the repository form below; 11.9 refuses it). On the first
-install, pnpm stops with `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED` and prints the key to add, pinned
-to the tag's commit; add exactly that line, and replace it whenever you move to another tag:
-
-```yaml
-# pnpm-workspace.yaml
-allowBuilds:
-  'eslint-plugin-metz@git+https://github.com/dacrowlah/eslint-plugin-metz.git#<commit of the tag>': true
-```
-
-The key must match how pnpm resolved the dependency, exactly (`git+ssh` and `git+https` are
-different keys). pnpm 12 also accepts the repository form without `#<commit>`, which this package's
-own smoke test uses and which keeps the allowance across tags
-([pnpm `allowBuilds`](https://pnpm.io/settings/build#allowbuilds)); prefer the printed,
-commit-pinned key if you want each new tag's build reviewed.
-
 ## Usage
 
 ```js
@@ -319,8 +289,7 @@ The package follows [Semantic Versioning](https://semver.org/):
 | **Minor** | A new rule outside the presets; a new option whose default keeps today's behaviour; a new preset or export; fewer reports.                                                                                                                                                                                                                                                    |
 | **Patch** | A false positive or a crash fixed; docs.                                                                                                                                                                                                                                                                                                                                      |
 
-Before 1.0.0 each kind moves one place down: a breaking change is a minor release, anything else a
-patch. Every change is recorded in [CHANGELOG.md](CHANGELOG.md).
+Every change is recorded in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
