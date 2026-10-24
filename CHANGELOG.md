@@ -11,6 +11,12 @@ All notable changes to this package are recorded here. The format follows
 
 The first stable release. No rule, preset, option, message or export changed.
 
+### Added
+
+- An "Adopting in an existing codebase" guide in the README (freeze findings with ESLint bulk
+  suppressions, touch it and fix it, a CI script that enforces it) and suggested instructions for
+  a team's `CLAUDE.md` or `AGENTS.md`.
+
 ### Changed
 
 - From this release the README's Versioning policy applies in full: a change that can make a

@@ -7,6 +7,7 @@ JavaScript and TypeScript, with React and React Native support.
 
 - [Install](#install)
 - [Usage](#usage)
+- [Adopting in an existing codebase](#adopting-in-an-existing-codebase)
 - [Presets](#presets)
 - [Overrides](#overrides)
 - [Customizing](#customizing)
@@ -66,6 +67,116 @@ export default [...tseslint.configs.recommended, ...metz.configs.strict];
 
 Every preset registers the plugin under `metz`, so its rules are `metz/<rule>`, and you can also
 name it yourself (`plugins: { metz }`): the presets reference the same plugin object.
+
+## Adopting in an existing codebase
+
+A codebase that has never been linted this strictly fails on day one. ESLint's
+[bulk suppressions](https://eslint.org/docs/latest/use/suppressions) freeze today's findings, so
+only new code is held to the limits, and a team then pays the old findings down as it touches files.
+
+1. **Freeze today's findings.** With the `strict` or `strict-react` preset on (ESLint suppresses only
+   rules at `"error"`, so the warn-level presets freeze nothing), run, in each directory ESLint runs
+   in, `npx eslint . --suppress-all` (or `--suppress-rule metz/max-counted-lines` for one rule at a time). It writes
+   `eslint-suppressions.json`; commit it. The file is generated data: never hand-edit it and never
+   add to it.
+2. **New code meets the limits from day one.** A new finding fails lint; only the frozen ones are
+   suppressed. A suppression is a count per file and rule, so it never admits a new finding in a
+   file beyond the frozen count.
+3. **Touch it, fix it.** A file a change modifies ends the change fully clean: fix every metz
+   finding in it, then drop its entries with `npx eslint . --prune-suppressions` in the directory
+   whose suppressions file lists it, and commit the pruned file. ESLint fails when a suppression no
+   longer matches a finding ("There are suppressions left that do not occur anymore"; the
+   `--pass-on-unpruned-suppressions` flag turns that off), which catches entries left behind after a
+   file is cleaned. It does not force a touched file to be cleaned: a file whose findings are all
+   still there passes.
+4. **Enforce touch-it-fix-it in CI.** This script fails when a file the branch adds, modifies,
+   copies or renames still has an entry in any `eslint-suppressions.json`. Entries are keyed by the
+   path they were recorded under, relative to the directory ESLint ran in, so a rename counts under
+   both its old and new path; deletions are skipped. Save it as `scripts/check-touched-files-clean.mjs`
+   and run it from anywhere in the repository on pull requests with full history (`fetch-depth: 0`), where the base is the branch
+   the pull request targets.
+
+```mjs
+// Fails when a file this branch adds, modifies, copies or renames still has an entry in an
+// eslint-suppressions.json. Usage: node check-touched-files-clean.mjs [base-ref] (default origin/main).
+import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
+const git = (...args) => execFileSync('git', args, { encoding: 'utf8', maxBuffer: 1 << 26 });
+const base = process.argv[2] ?? 'origin/main';
+process.chdir(git('rev-parse', '--show-toplevel').trim()); // git prints root-relative paths
+
+// `-z` output: a status, then one path (two for a rename or copy: old, then new).
+function takeEntry(tokens) {
+  const status = tokens.shift();
+  return { status, paths: tokens.splice(0, /^[RC]/.test(status) ? 2 : 1) };
+}
+
+function parseNameStatus(output) {
+  const tokens = output.split('\0');
+  const entries = [];
+  while (tokens.length > 1) entries.push(takeEntry(tokens));
+  return entries;
+}
+
+function touchedPaths() {
+  const diff = git('diff', '--name-status', '-z', '-M', '-C', `${base}...HEAD`);
+  const kept = parseNameStatus(diff).filter(({ status }) => !status.startsWith('D'));
+  return new Set(kept.flatMap(({ paths }) => paths));
+}
+
+// Entries are keyed relative to the directory ESLint ran in, which holds the file (`..` allowed).
+function recordedPaths(file) {
+  const dir = path.posix.dirname(file);
+  return Object.keys(JSON.parse(readFileSync(file, 'utf8'))).map((key) =>
+    path.posix.join(dir, key),
+  );
+}
+
+function suppressionFiles() {
+  return git('ls-files', '-z', '--', '*eslint-suppressions.json').split('\0').filter(Boolean);
+}
+
+const touched = touchedPaths();
+const stale = suppressionFiles()
+  .flatMap(recordedPaths)
+  .filter((key) => touched.has(key));
+if (stale.length > 0) {
+  console.error(
+    `Touched files still suppressed (fix them, then run eslint --prune-suppressions):\n${stale.map((f) => `  - ${f}`).join('\n')}`,
+  );
+  process.exit(1);
+}
+console.log(`Clean: no file changed since ${base} has a suppression entry.`);
+```
+
+```sh
+node scripts/check-touched-files-clean.mjs origin/main
+```
+
+### Suggested instructions for CLAUDE.md or AGENTS.md
+
+Paste this into the file your coding agents read, and adjust the paths and commands to your project:
+
+```markdown
+### Sandi Metz limits
+
+- `eslint-plugin-metz` (preset `strict`; `strict-react` for React code) enforces Sandi Metz's limits
+  as errors: files of at most 100 counted lines, functions of at most 5, a component's logic of at
+  most 5 and its JSX of at most 15, at most 4 parameters (an options object counts one per key),
+  and every waiver carries a written reason. In React code also one component per file, JSX nested
+  at most 3 deep, and one view-model hook per screen. Test files get 150 lines a file and 10 a test.
+- Findings that existed when the plugin was adopted are frozen in `eslint-suppressions.json`
+  (one per directory ESLint runs in). It is generated data: never hand-edit it and never add to it.
+- Any file a change touches must be made fully clean: fix every metz finding in it, then drop its
+  entries by running `npx eslint . --prune-suppressions` in the directory whose suppressions file
+  lists it, and commit the pruned file. A stale entry fails lint.
+- `node scripts/check-touched-files-clean.mjs origin/main` enforces this in CI: it fails when a file
+  changed since the base branch still has a suppression entry.
+- Never raise a limit, weaken the lint config or add a waiver to get a run green. A waiver needs the
+  owner's explicit approval, one site at a time.
+```
 
 ## Presets
 
